@@ -1,53 +1,126 @@
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { ArrowRight, Code, Smartphone, Globe, Users, Award, Zap, Star } from "lucide-react";
+import { ArrowRight, Code, Smartphone, Globe, Users, Award, Zap, Star,X, Send, Mail, MessageSquare, User } from "lucide-react";
 
 const Index = () => {
+  const [isContactOpen, setIsContactOpen] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState('');
   const testimonials = [
     {
-      name: "Emily Watson",
-      company: "TechStart Inc.",
-      role: "CEO",
+      name: "Nilaksha Anjana",
+      company: "",
+      role: "",
       content: "TriovateTech transformed our business with their innovative software solutions. Their team's expertise and dedication exceeded our expectations.",
       rating: 5,
       avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?auto=format&fit=crop&w=200&q=80"
     },
     {
       name: "Marcus Johnson",
-      company: "Digital Dynamics",
-      role: "CTO",
+      company: "",
+      role: "",
       content: "Working with TriovateTech was a game-changer. They delivered a scalable mobile app that increased our user engagement by 300%.",
       rating: 5,
       avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80"
     },
     {
-      name: "Sarah Chen",
-      company: "CloudFirst Solutions",
+      name: "Nipun Yoshita",
+      company: "",
       role: "Product Manager",
       content: "The quality of work and attention to detail from TriovateTech is outstanding. They truly understand modern technology trends.",
       rating: 5,
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80"
+      avatar: ""
     },
     {
-      name: "David Rodriguez",
-      company: "Innovation Labs",
-      role: "Founder",
+      name: "Robert Lopez",
+      company: "",
+      role: "",
       content: "TriovateTech's team helped us migrate to the cloud seamlessly. Their expertise saved us months of development time.",
       rating: 5,
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80"
+      avatar: ""
     },
     {
-      name: "Lisa Park",
-      company: "NextGen Systems",
-      role: "Operations Director",
+      name: "Shehani Madalagama",
+      company: "",
+      role: "Project Manager",
       content: "From concept to deployment, TriovateTech delivered exceptional results. Our new platform has revolutionized our operations.",
       rating: 5,
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
+      avatar: ""
     }
   ];
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('');
+
+    try {
+      // Method 1: EmailJS (Recommended for frontend-only solution)
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          service_id: 'service_d5ugero', // Your EmailJS service ID
+          template_id: 'template_keeyw9i', // Your EmailJS template ID
+          user_id: 'StXsMHTm7pk4bOBFp', // Your EmailJS public key
+          template_params: {
+            from_name: contactForm.name,
+            from_email: contactForm.email,
+            to_email: 'triovatetech@gmail.com', // Your receiving email
+            subject: contactForm.subject,
+            message: contactForm.message,
+          }
+        })
+      });
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setContactForm({ name: '', email: '', subject: '', message: '' });
+        
+        setTimeout(() => {
+          setIsContactOpen(false);
+          setSubmitStatus('');
+        }, 2000);
+      } else {
+        throw new Error('Failed to send email');
+      }
+
+    } catch (error) {
+      console.error('Email sending failed:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setContactForm({
+      ...contactForm,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const openContact = () => {
+    setIsContactOpen(true);
+    setSubmitStatus('');
+  };
+
+  const closeContact = () => {
+    setIsContactOpen(false);
+    setContactForm({ name: '', email: '', subject: '', message: '' });
+    setSubmitStatus('');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -64,13 +137,142 @@ const Index = () => {
               <a href="#home" className="text-gray-700 hover:text-blue-600 transition-colors">Home</a>
               <a href="#services" className="text-gray-700 hover:text-blue-600 transition-colors">Services</a>
               <a href="#about" className="text-gray-700 hover:text-blue-600 transition-colors">About</a>
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Button 
+                onClick={openContact}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
                 Contact Us
               </Button>
             </div>
           </div>
         </div>
       </nav>
+
+      {/* Contact Popup Overlay */}
+      {isContactOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-300">
+            {/* Header */}
+            <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-t-2xl">
+              <button
+                onClick={closeContact}
+                className="absolute right-4 top-4 text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <div className="text-center text-white">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Mail className="w-8 h-8" />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">Get In Touch</h2>
+                <p className="text-blue-100">We'd love to hear from you. Send us a message!</p>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleContactSubmit} className="p-6 space-y-4">
+              {/* Name Field */}
+              <div className="space-y-2">
+                <label className="flex items-center text-sm font-medium text-gray-700">
+                  <User className="w-4 h-4 mr-2 text-blue-600" />
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={contactForm.name}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label className="flex items-center text-sm font-medium text-gray-700">
+                  <Mail className="w-4 h-4 mr-2 text-blue-600" />
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={contactForm.email}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter your email address"
+                />
+              </div>
+
+              {/* Subject Field */}
+              <div className="space-y-2">
+                <label className="flex items-center text-sm font-medium text-gray-700">
+                  <MessageSquare className="w-4 h-4 mr-2 text-blue-600" />
+                  Subject *
+                </label>
+                <input
+                  type="text"
+                  name="subject"
+                  value={contactForm.subject}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="What's this about?"
+                />
+              </div>
+
+              {/* Message Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Message *
+                </label>
+                <textarea
+                  name="message"
+                  value={contactForm.message}
+                  onChange={handleInputChange}
+                  required
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                  placeholder="Tell us about your project or inquiry..."
+                />
+              </div>
+
+              {/* Status Messages */}
+              {submitStatus === 'success' && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800 text-center">
+                  ✅ Message sent successfully! We'll get back to you soon.
+                </div>
+              )}
+
+              {submitStatus === 'error' && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800 text-center">
+                  ❌ Failed to send message. Please check your EmailJS configuration and try again.
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isSubmitting || !contactForm.name || !contactForm.email || !contactForm.subject || !contactForm.message}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed py-3 text-lg font-semibold"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Sending...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    <Send className="w-5 h-5 mr-2" />
+                    Send Message
+                  </div>
+                )}
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section id="home" className="relative py-20 lg:py-25">
@@ -289,7 +491,7 @@ const Index = () => {
                           <div>
                             <CardTitle className="text-lg">{testimonial.name}</CardTitle>
                             <CardDescription className="text-sm text-gray-600">
-                              {testimonial.role} at {testimonial.company}
+                              {testimonial.role} {testimonial.company}
                             </CardDescription>
                           </div>
                         </div>
@@ -351,7 +553,7 @@ const Index = () => {
                   Chief Executive Officer
                 </Badge>
                 <CardDescription className="text-gray-600 leading-relaxed">
-                  With over 15 years of experience in tech leadership, Kavindu drives our strategic 
+                  With over 5 years of experience in tech leadership, Kavindu drives our strategic 
                   vision and ensures we deliver exceptional value to our clients while fostering 
                   innovation across all departments.
                 </CardDescription>
@@ -424,7 +626,7 @@ const Index = () => {
             software solutions tailored to your needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+            <Button onClick={openContact} size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
               Contact Us
             </Button>
           </div>
@@ -464,9 +666,9 @@ const Index = () => {
             <div>
               <h3 className="font-semibold mb-4">Contact Info</h3>
               <div className="space-y-2 text-gray-400">
-                <p>info@triovatetech.com</p>
-                <p>+1 (555) 123-4567</p>
-                <p>123 Tech Street<br />Innovation City, IC 12345</p>
+                <p>triovatetech@gmail.com</p>
+                <p>+94719981665</p>
+                <p>Hettiyawaththa Kade<br />Pathakada , Pelmadulla</p>
               </div>
             </div>
           </div>
